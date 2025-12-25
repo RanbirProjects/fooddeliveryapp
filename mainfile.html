@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FoodFlow - Full Menu</title>
+    <title>FoodFlow - Indian Edition</title>
     
     <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -90,25 +90,25 @@
     <script type="text/babel">
         const { useState, useEffect, useContext, createContext, useRef } = React;
 
-        // --- MOCK DATA (EXPANDED MENUS) ---
+        // --- MOCK DATA (INDIAN RUPEES) ---
         const RESTAURANTS = [
             { 
                 id: "r1", 
                 name: "Burger Lab", 
                 rating: 4.9, 
                 time: "25 min", 
-                fee: "$2.00", 
+                fee: "₹40", 
                 category: "Burger", 
                 img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80", 
                 menu: [
-                    {id:"b1", name:"Classic Smash", desc:"Double beef patty, american cheese, pickles", price:14},
-                    {id:"b2", name:"Bacon Deluxe", desc:"Crispy bacon, cheddar, BBQ sauce", price:16},
-                    {id:"b3", name:"Mushroom Swiss", desc:"Sautéed mushrooms, swiss cheese, garlic aioli", price:15},
-                    {id:"b4", name:"Spicy Jalapeño", desc:"Pepper jack cheese, jalapeños, chipotle mayo", price:15},
-                    {id:"b5", name:"Crispy Chicken", desc:"Fried chicken breast, coleslaw, honey mustard", price:13},
-                    {id:"b6", name:"Veggie Bean", desc:"Black bean patty, avocado, lettuce, tomato", price:14},
-                    {id:"b7", name:"Double Trouble", desc:"Triple beef, triple cheese, caramelized onions", price:20},
-                    {id:"b8", name:"Truffle Fries", desc:"Loaded fries with truffle oil and parmesan", price:8}
+                    {id:"b1", name:"Classic Smash", desc:"Double beef patty, american cheese, pickles", price:249},
+                    {id:"b2", name:"Bacon Deluxe", desc:"Crispy bacon, cheddar, BBQ sauce", price:299},
+                    {id:"b3", name:"Mushroom Swiss", desc:"Sautéed mushrooms, swiss cheese, garlic aioli", price:279},
+                    {id:"b4", name:"Spicy Jalapeño", desc:"Pepper jack cheese, jalapeños, chipotle mayo", price:279},
+                    {id:"b5", name:"Crispy Chicken", desc:"Fried chicken breast, coleslaw, honey mustard", price:259},
+                    {id:"b6", name:"Veggie Bean", desc:"Black bean patty, avocado, lettuce, tomato", price:249},
+                    {id:"b7", name:"Double Trouble", desc:"Triple beef, triple cheese, caramelized onions", price:399},
+                    {id:"b8", name:"Truffle Fries", desc:"Loaded fries with truffle oil and parmesan", price:149}
                 ] 
             },
             { 
@@ -116,18 +116,18 @@
                 name: "Sushi Omakase", 
                 rating: 4.8, 
                 time: "35 min", 
-                fee: "$3.50", 
+                fee: "₹50", 
                 category: "Sushi", 
                 img: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?auto=format&fit=crop&w=600&q=80", 
                 menu: [
-                    {id:"s1", name:"Salmon Nigiri (2pc)", desc:"Fresh Atlantic salmon over vinegared rice", price:8},
-                    {id:"s2", name:"Spicy Tuna Roll", desc:"Tuna, spicy mayo, cucumber, sesame", price:12},
-                    {id:"s3", name:"Dragon Roll", desc:"Eel, avocado, cucumber, top with avocado", price:14},
-                    {id:"s4", name:"Rainbow Roll", desc:"California roll topped with assorted fish", price:16},
-                    {id:"s5", name:"Wagyu Beef Tataki", desc:"Seared wagyu, ponzu sauce, garlic chips", price:22},
-                    {id:"s6", name:"Edamame", desc:"Steamed soybeans with sea salt", price:5},
-                    {id:"s7", name:"Miso Soup", desc:"Traditional soybean paste soup with tofu", price:4},
-                    {id:"s8", name:"Gyoza (6pc)", desc:"Pan-fried pork dumplings", price:9}
+                    {id:"s1", name:"Salmon Nigiri (2pc)", desc:"Fresh Atlantic salmon over vinegared rice", price:199},
+                    {id:"s2", name:"Spicy Tuna Roll", desc:"Tuna, spicy mayo, cucumber, sesame", price:349},
+                    {id:"s3", name:"Dragon Roll", desc:"Eel, avocado, cucumber, top with avocado", price:399},
+                    {id:"s4", name:"Rainbow Roll", desc:"California roll topped with assorted fish", price:449},
+                    {id:"s5", name:"Wagyu Beef Tataki", desc:"Seared wagyu, ponzu sauce, garlic chips", price:699},
+                    {id:"s6", name:"Edamame", desc:"Steamed soybeans with sea salt", price:99},
+                    {id:"s7", name:"Miso Soup", desc:"Traditional soybean paste soup with tofu", price:79},
+                    {id:"s8", name:"Gyoza (6pc)", desc:"Pan-fried pork dumplings", price:199}
                 ] 
             },
             { 
@@ -139,14 +139,14 @@
                 category: "Pizza", 
                 img: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80", 
                 menu: [
-                    {id:"p1", name:"Margherita", desc:"San Marzano tomato sauce, fresh mozzarella, basil", price:14},
-                    {id:"p2", name:"Pepperoni", desc:"Classic tomato sauce, mozzarella, pepperoni", price:16},
-                    {id:"p3", name:"BBQ Chicken", desc:"BBQ sauce, grilled chicken, red onions, cilantro", price:18},
-                    {id:"p4", name:"Veggie Supreme", desc:"Mushrooms, peppers, onions, olives, tomatoes", price:17},
-                    {id:"p5", name:"Meat Lovers", desc:"Sausage, pepperoni, bacon, ham, ground beef", price:20},
-                    {id:"p6", name:"Four Cheese", desc:"Mozzarella, cheddar, parmesan, gorgonzola", price:18},
-                    {id:"p7", name:"Hawaiian", desc:"Ham, pineapple, extra cheese", price:16},
-                    {id:"p8", name:"White Bianco", desc:"Garlic oil base, ricotta, spinach, mozzarella", price:19}
+                    {id:"p1", name:"Margherita", desc:"San Marzano tomato sauce, fresh mozzarella, basil", price:299},
+                    {id:"p2", name:"Pepperoni", desc:"Classic tomato sauce, mozzarella, pepperoni", price:349},
+                    {id:"p3", name:"BBQ Chicken", desc:"BBQ sauce, grilled chicken, red onions, cilantro", price:399},
+                    {id:"p4", name:"Veggie Supreme", desc:"Mushrooms, peppers, onions, olives, tomatoes", price:379},
+                    {id:"p5", name:"Meat Lovers", desc:"Sausage, pepperoni, bacon, ham, ground beef", price:499},
+                    {id:"p6", name:"Four Cheese", desc:"Mozzarella, cheddar, parmesan, gorgonzola", price:399},
+                    {id:"p7", name:"Hawaiian", desc:"Ham, pineapple, extra cheese", price:349},
+                    {id:"p8", name:"White Bianco", desc:"Garlic oil base, ricotta, spinach, mozzarella", price:419}
                 ] 
             },
             { 
@@ -154,18 +154,18 @@
                 name: "El Taco Loco", 
                 rating: 4.6, 
                 time: "20 min", 
-                fee: "$1.50", 
+                fee: "₹30", 
                 category: "Mexican", 
                 img: "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=600&q=80", 
                 menu: [
-                    {id:"m1", name:"Carne Asada Tacos (3)", desc:"Grilled steak, onions, cilantro, salsa verde", price:14},
-                    {id:"m2", name:"Chicken Burrito", desc:"Rice, beans, cheese, sour cream, salsa", price:12},
-                    {id:"m3", name:"Nachos Grande", desc:"Loaded with cheese, beans, jalapeños, guac", price:13},
-                    {id:"m4", name:"Quesadilla", desc:"Flour tortilla, cheese, choice of meat", price:10},
-                    {id:"m5", name:"Guacamole & Chips", desc:"Freshly made avocado dip", price:8},
-                    {id:"m6", name:"Churros", desc:"Fried dough sticks with cinnamon sugar", price:6},
-                    {id:"m7", name:"Enchiladas (3)", desc:"Corn tortillas, red sauce, cheese, chicken", price:14},
-                    {id:"m8", name:"Tortilla Soup", desc:"Chicken soup with tortilla strips and avocado", price:9}
+                    {id:"m1", name:"Carne Asada Tacos (3)", desc:"Grilled steak, onions, cilantro, salsa verde", price:299},
+                    {id:"m2", name:"Chicken Burrito", desc:"Rice, beans, cheese, sour cream, salsa", price:249},
+                    {id:"m3", name:"Nachos Grande", desc:"Loaded with cheese, beans, jalapeños, guac", price:289},
+                    {id:"m4", name:"Quesadilla", desc:"Flour tortilla, cheese, choice of meat", price:199},
+                    {id:"m5", name:"Guacamole & Chips", desc:"Freshly made avocado dip", price:129},
+                    {id:"m6", name:"Churros", desc:"Fried dough sticks with cinnamon sugar", price:79},
+                    {id:"m7", name:"Enchiladas (3)", desc:"Corn tortillas, red sauce, cheese, chicken", price:299},
+                    {id:"m8", name:"Tortilla Soup", desc:"Chicken soup with tortilla strips and avocado", price:149}
                 ] 
             },
             { 
@@ -173,18 +173,18 @@
                 name: "Green Bowl", 
                 rating: 4.5, 
                 time: "15 min", 
-                fee: "$2.00", 
+                fee: "₹40", 
                 category: "Healthy", 
                 img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80", 
                 menu: [
-                    {id:"h1", name:"Caesar Salad", desc:"Romaine lettuce, croutons, parmesan, caesar dressing", price:12},
-                    {id:"h2", name:"Greek Salad", desc:"Cucumber, tomato, olives, feta, olive oil", price:13},
-                    {id:"h3", name:"Acai Bowl", desc:"Acai base, granola, banana, strawberries, honey", price:14},
-                    {id:"h4", name:"Quinoa Power Bowl", desc:"Quinoa, chickpeas, kale, tahini dressing", price:15},
-                    {id:"h5", name:"Salmon Poke Bowl", desc:"Sushi grade salmon, rice, edamame, avocado", price:18},
-                    {id:"h6", name:"Avocado Toast", desc:"Sourdough bread, smashed avocado, radish", price:10},
-                    {id:"h7", name:"Green Smoothie", desc:"Spinach, banana, almond milk, protein", price:8},
-                    {id:"h8", name:"Grilled Chicken Breast", desc:"Seasoned chicken with steamed broccoli", price:16}
+                    {id:"h1", name:"Caesar Salad", desc:"Romaine lettuce, croutons, parmesan, caesar dressing", price:199},
+                    {id:"h2", name:"Greek Salad", desc:"Cucumber, tomato, olives, feta, olive oil", price:219},
+                    {id:"h3", name:"Acai Bowl", desc:"Acai base, granola, banana, strawberries, honey", price:299},
+                    {id:"h4", name:"Quinoa Power Bowl", desc:"Quinoa, chickpeas, kale, tahini dressing", price:329},
+                    {id:"h5", name:"Salmon Poke Bowl", desc:"Sushi grade salmon, rice, edamame, avocado", price:399},
+                    {id:"h6", name:"Avocado Toast", desc:"Sourdough bread, smashed avocado, radish", price:169},
+                    {id:"h7", name:"Green Smoothie", desc:"Spinach, banana, almond milk, protein", price:129},
+                    {id:"h8", name:"Grilled Chicken Breast", desc:"Seasoned chicken with steamed broccoli", price:349}
                 ] 
             }
         ];
@@ -264,6 +264,8 @@
 
         const CartSheet = () => {
             const {items, open, setOpen, upd, clear, total} = useCart();
+            const deliveryFee = 40; // Fixed delivery fee in INR
+            
             if(!open) return null;
             return (
                 <div className="fixed inset-0 z-50 flex justify-end pointer-events-none">
@@ -287,7 +289,7 @@
                                         <div className="flex-1">
                                             <h3 className="font-bold text-gray-900">{x.item.name}</h3>
                                             <p className="text-xs text-gray-500 mt-1 truncate w-32">{x.item.desc}</p>
-                                            <p className="font-bold text-[#FF6B6B] mt-2">${x.item.price * x.q}</p>
+                                            <p className="font-bold text-[#FF6B6B] mt-2">₹{x.item.price * x.q}</p>
                                         </div>
                                         <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-xl border border-gray-100">
                                             <button onClick={()=>upd(x.item.id,-1)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white text-gray-500 active:bg-gray-200"><Icon n="minus" s={16}/></button>
@@ -300,9 +302,9 @@
                         </div>
                         {items.length>0 && (
                             <div className="p-6 bg-white border-t border-gray-100 rounded-t-3xl shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
-                                <div className="flex justify-between text-gray-500 mb-2"><span>Subtotal</span><span>${total.toFixed(2)}</span></div>
-                                <div className="flex justify-between text-gray-500 mb-4"><span>Delivery</span><span>$2.00</span></div>
-                                <div className="flex justify-between text-2xl font-bold mb-6 text-gray-900"><span>Total</span><span>${(total+2).toFixed(2)}</span></div>
+                                <div className="flex justify-between text-gray-500 mb-2"><span>Subtotal</span><span>₹{total.toFixed(2)}</span></div>
+                                <div className="flex justify-between text-gray-500 mb-4"><span>Delivery</span><span>₹{deliveryFee}</span></div>
+                                <div className="flex justify-between text-2xl font-bold mb-6 text-gray-900"><span>Total</span><span>₹{(total+deliveryFee).toFixed(2)}</span></div>
                                 <button onClick={()=>{clear(); setOpen(false); alert("Order Placed! \nEnjoy your meal.");}} className="w-full bg-[#FF6B6B] text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 active:scale-[0.98] transition-all flex justify-center items-center gap-2">
                                     Checkout Now <Icon n="cart" c="white"/>
                                 </button>
@@ -415,7 +417,7 @@
                                     <div className="flex-1">
                                         <h3 className="font-bold text-lg text-gray-900">{m.name}</h3>
                                         <p className="text-sm text-gray-500 mt-1 line-clamp-2">{m.desc}</p>
-                                        <p className="font-bold text-xl text-gray-900 mt-2">${m.price}</p>
+                                        <p className="font-bold text-xl text-gray-900 mt-2">₹{m.price}</p>
                                     </div>
                                     <button onClick={()=>handleAdd(m)} className="w-14 h-14 rounded-full bg-[#FF6B6B] text-white flex items-center justify-center shadow-lg shadow-red-200 active:scale-90 transition-all hover:bg-[#ff5252]">
                                         <Icon n="plus"/>
