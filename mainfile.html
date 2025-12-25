@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FoodFlow - Full Menu</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: #F8FAFC; 
+            margin: 0; 
+            overscroll-behavior: none; 
+        }
+        
+        #root { 
+            max-width: 480px; 
+            margin: 0 auto; 
+            background: #FFFFFF; 
+            min-height: 100vh; 
+            position: relative; 
+            box-shadow: 0 0 50px rgba(0,0,0,0.05);
+            overflow-x: hidden;
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 107, 107, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
+        }
+
+        @keyframes toastSlide {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .anim-up { animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        .pop-in { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .pulse-badge { animation: pulse-red 1s infinite; }
+        .toast-anim { animation: toastSlide 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        .skeleton-bg {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        .tab-active {
+            background: #1F2937;
+            color: white;
+            border-color: #1F2937;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useContext, createContext, useRef } = React;
+
+        // --- MOCK DATA (EXPANDED MENUS) ---
+        const RESTAURANTS = [
+            { 
+                id: "r1", 
+                name: "Burger Lab", 
+                rating: 4.9, 
+                time: "25 min", 
+                fee: "$2.00", 
+                category: "Burger", 
+                img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80", 
+                menu: [
+                    {id:"b1", name:"Classic Smash", desc:"Double beef patty, american cheese, pickles", price:14},
+                    {id:"b2", name:"Bacon Deluxe", desc:"Crispy bacon, cheddar, BBQ sauce", price:16},
+                    {id:"b3", name:"Mushroom Swiss", desc:"Sautéed mushrooms, swiss cheese, garlic aioli", price:15},
+                    {id:"b4", name:"Spicy Jalapeño", desc:"Pepper jack cheese, jalapeños, chipotle mayo", price:15},
+                    {id:"b5", name:"Crispy Chicken", desc:"Fried chicken breast, coleslaw, honey mustard", price:13},
+                    {id:"b6", name:"Veggie Bean", desc:"Black bean patty, avocado, lettuce, tomato", price:14},
+                    {id:"b7", name:"Double Trouble", desc:"Triple beef, triple cheese, caramelized onions", price:20},
+                    {id:"b8", name:"Truffle Fries", desc:"Loaded fries with truffle oil and parmesan", price:8}
+                ] 
+            },
+            { 
+                id: "r2", 
+                name: "Sushi Omakase", 
+                rating: 4.8, 
+                time: "35 min", 
+                fee: "$3.50", 
+                category: "Sushi", 
+                img: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?auto=format&fit=crop&w=600&q=80", 
+                menu: [
+                    {id:"s1", name:"Salmon Nigiri (2pc)", desc:"Fresh Atlantic salmon over vinegared rice", price:8},
+                    {id:"s2", name:"Spicy Tuna Roll", desc:"Tuna, spicy mayo, cucumber, sesame", price:12},
+                    {id:"s3", name:"Dragon Roll", desc:"Eel, avocado, cucumber, top with avocado", price:14},
+                    {id:"s4", name:"Rainbow Roll", desc:"California roll topped with assorted fish", price:16},
+                    {id:"s5", name:"Wagyu Beef Tataki", desc:"Seared wagyu, ponzu sauce, garlic chips", price:22},
+                    {id:"s6", name:"Edamame", desc:"Steamed soybeans with sea salt", price:5},
+                    {id:"s7", name:"Miso Soup", desc:"Traditional soybean paste soup with tofu", price:4},
+                    {id:"s8", name:"Gyoza (6pc)", desc:"Pan-fried pork dumplings", price:9}
+                ] 
+            },
+            { 
+                id: "r3", 
+                name: "Napoli Pizza", 
+                rating: 4.7, 
+                time: "40 min", 
+                fee: "Free", 
+                category: "Pizza", 
+                img: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80", 
+                menu: [
+                    {id:"p1", name:"Margherita", desc:"San Marzano tomato sauce, fresh mozzarella, basil", price:14},
+                    {id:"p2", name:"Pepperoni", desc:"Classic tomato sauce, mozzarella, pepperoni", price:16},
+                    {id:"p3", name:"BBQ Chicken", desc:"BBQ sauce, grilled chicken, red onions, cilantro", price:18},
+                    {id:"p4", name:"Veggie Supreme", desc:"Mushrooms, peppers, onions, olives, tomatoes", price:17},
+                    {id:"p5", name:"Meat Lovers", desc:"Sausage, pepperoni, bacon, ham, ground beef", price:20},
+                    {id:"p6", name:"Four Cheese", desc:"Mozzarella, cheddar, parmesan, gorgonzola", price:18},
+                    {id:"p7", name:"Hawaiian", desc:"Ham, pineapple, extra cheese", price:16},
+                    {id:"p8", name:"White Bianco", desc:"Garlic oil base, ricotta, spinach, mozzarella", price:19}
+                ] 
+            },
+            { 
+                id: "r4", 
+                name: "El Taco Loco", 
+                rating: 4.6, 
+                time: "20 min", 
+                fee: "$1.50", 
+                category: "Mexican", 
+                img: "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=600&q=80", 
+                menu: [
+                    {id:"m1", name:"Carne Asada Tacos (3)", desc:"Grilled steak, onions, cilantro, salsa verde", price:14},
+                    {id:"m2", name:"Chicken Burrito", desc:"Rice, beans, cheese, sour cream, salsa", price:12},
+                    {id:"m3", name:"Nachos Grande", desc:"Loaded with cheese, beans, jalapeños, guac", price:13},
+                    {id:"m4", name:"Quesadilla", desc:"Flour tortilla, cheese, choice of meat", price:10},
+                    {id:"m5", name:"Guacamole & Chips", desc:"Freshly made avocado dip", price:8},
+                    {id:"m6", name:"Churros", desc:"Fried dough sticks with cinnamon sugar", price:6},
+                    {id:"m7", name:"Enchiladas (3)", desc:"Corn tortillas, red sauce, cheese, chicken", price:14},
+                    {id:"m8", name:"Tortilla Soup", desc:"Chicken soup with tortilla strips and avocado", price:9}
+                ] 
+            },
+            { 
+                id: "r5", 
+                name: "Green Bowl", 
+                rating: 4.5, 
+                time: "15 min", 
+                fee: "$2.00", 
+                category: "Healthy", 
+                img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80", 
+                menu: [
+                    {id:"h1", name:"Caesar Salad", desc:"Romaine lettuce, croutons, parmesan, caesar dressing", price:12},
+                    {id:"h2", name:"Greek Salad", desc:"Cucumber, tomato, olives, feta, olive oil", price:13},
+                    {id:"h3", name:"Acai Bowl", desc:"Acai base, granola, banana, strawberries, honey", price:14},
+                    {id:"h4", name:"Quinoa Power Bowl", desc:"Quinoa, chickpeas, kale, tahini dressing", price:15},
+                    {id:"h5", name:"Salmon Poke Bowl", desc:"Sushi grade salmon, rice, edamame, avocado", price:18},
+                    {id:"h6", name:"Avocado Toast", desc:"Sourdough bread, smashed avocado, radish", price:10},
+                    {id:"h7", name:"Green Smoothie", desc:"Spinach, banana, almond milk, protein", price:8},
+                    {id:"h8", name:"Grilled Chicken Breast", desc:"Seasoned chicken with steamed broccoli", price:16}
+                ] 
+            }
+        ];
+
+        // --- ICON COMPONENT ---
+        const Icon = ({n, s=20, c="currentColor"}) => (
+            <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                {n==='back' && <path d="M15 18l-6-6 6-6"/>}
+                {n==='cart' && <path d="M9 20a1 1 0 100 2 1 1 0 000-2zm7 0a1 1 0 100 2 1 1 0 000-2zm-7-4h7.5a2 2 0 002-1.6l1.8-9A2 2 0 0018.4 3H6.3a2 2 0 00-1.9 1.5l-.6 3"/>}
+                {n==='plus' && <path d="M12 4v16m8-8H4"/>}
+                {n==='minus' && <path d="M5 12h14"/>}
+                {n==='close' && <path d="M6 18L18 6M6 6l12 12"/>}
+                {n==='check' && <path d="M20 6L9 17l-5-5"/>}
+            </svg>
+        );
+
+        // --- CART CONTEXT ---
+        const CartCtx = createContext();
+        const CartProvider = ({children}) => {
+            const [items, setItems] = useState([]);
+            const [open, setOpen] = useState(false);
+            const [pulse, setPulse] = useState(false);
+
+            const add = (rId, item) => {
+                setItems(p => {
+                    if (p.length && p[0].rId !== rId) { 
+                        return [{rId, item, q:1}]; 
+                    }
+                    const ex = p.find(x => x.item.id === item.id);
+                    return ex ? p.map(x => x.item.id === item.id ? {...x, q: x.q+1} : x) : [...p, {rId, item, q:1}];
+                });
+                setOpen(true);
+                setPulse(true);
+                setTimeout(() => setPulse(false), 1000);
+            };
+
+            const upd = (id, d) => setItems(p => p.map(x => x.item.id === id ? {...x, q: Math.max(0, x.q+d)} : x).filter(x => x.q>0));
+            const clear = () => setItems([]);
+            const total = items.reduce((a,b) => a + b.item.price*b.q, 0);
+            const count = items.reduce((a,b)=>a+b.q,0);
+
+            return <CartCtx.Provider value={{items, add, upd, clear, open, setOpen, total, count, pulse}}>{children}</CartCtx.Provider>;
+        };
+        const useCart = () => useContext(CartCtx);
+
+        // --- UI COMPONENTS ---
+
+        const Toast = ({msg, show}) => {
+            if(!show) return null;
+            return (
+                <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-gray-900 text-white px-6 py-3 rounded-full shadow-xl flex items-center gap-2 toast-anim pointer-events-none">
+                    <span className="text-green-400 font-bold text-xl"><Icon n="check" s={16}/></span>
+                    <span className="font-medium text-sm">{msg}</span>
+                </div>
+            );
+        };
+
+        const Header = ({t, back, onBack}) => {
+            const {count, setOpen, pulse} = useCart();
+            return (
+                <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md px-5 py-4 flex justify-between items-center border-b border-gray-100">
+                    <div className="flex items-center gap-4">
+                        {back && <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-gray-100 active:scale-90 transition-transform"><Icon n="back"/></button>}
+                        <h1 className="font-bold text-xl tracking-tight text-gray-900">{t}</h1>
+                    </div>
+                    <button onClick={()=>setOpen(true)} className="relative p-3 -mr-2 rounded-full hover:bg-gray-100 transition-all">
+                        <Icon n="cart" c="#333"/>
+                        {count > 0 && (
+                            <span className={`absolute top-1 right-1 bg-[#FF6B6B] text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white ${pulse ? 'pop-in pulse-badge' : 'pop-in'}`}>
+                                {count}
+                            </span>
+                        )}
+                    </button>
+                </div>
+            );
+        };
+
+        const CartSheet = () => {
+            const {items, open, setOpen, upd, clear, total} = useCart();
+            if(!open) return null;
+            return (
+                <div className="fixed inset-0 z-50 flex justify-end pointer-events-none">
+                    <div className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${open?'opacity-100':'opacity-0'}`} onClick={()=>setOpen(false)}/>
+                    <div className={`absolute bottom-0 w-full max-w-[480px] bg-white rounded-t-3xl h-[85vh] flex flex-col shadow-2xl pointer-events-auto transform transition-transform duration-300 ease-cubic ${open?'translate-y-0':'translate-y-full'}`}>
+                        <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-3xl">
+                            <h2 className="font-bold text-lg text-gray-800">Your Basket</h2>
+                            <button onClick={()=>setOpen(false)} className="p-2 rounded-full hover:bg-gray-200 transition-colors"><Icon n="close" s={18} c="#666"/></button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-5 space-y-4 no-scrollbar">
+                            {items.length===0 ? (
+                                <div className="h-full flex flex-col items-center justify-center text-gray-400">
+                                    <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                        <Icon n="cart" s={32} c="#ccc"/>
+                                    </div>
+                                    <p className="font-medium">Your cart is empty</p>
+                                </div>
+                            ) : (
+                                items.map(x => (
+                                    <div key={x.item.id} className="flex justify-between items-center bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                                        <div className="flex-1">
+                                            <h3 className="font-bold text-gray-900">{x.item.name}</h3>
+                                            <p className="text-xs text-gray-500 mt-1 truncate w-32">{x.item.desc}</p>
+                                            <p className="font-bold text-[#FF6B6B] mt-2">${x.item.price * x.q}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-xl border border-gray-100">
+                                            <button onClick={()=>upd(x.item.id,-1)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white text-gray-500 active:bg-gray-200"><Icon n="minus" s={16}/></button>
+                                            <span className="text-sm font-bold w-4 text-center">{x.q}</span>
+                                            <button onClick={()=>upd(x.item.id,1)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white text-gray-800 active:bg-gray-200"><Icon n="plus" s={16}/></button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                        {items.length>0 && (
+                            <div className="p-6 bg-white border-t border-gray-100 rounded-t-3xl shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+                                <div className="flex justify-between text-gray-500 mb-2"><span>Subtotal</span><span>${total.toFixed(2)}</span></div>
+                                <div className="flex justify-between text-gray-500 mb-4"><span>Delivery</span><span>$2.00</span></div>
+                                <div className="flex justify-between text-2xl font-bold mb-6 text-gray-900"><span>Total</span><span>${(total+2).toFixed(2)}</span></div>
+                                <button onClick={()=>{clear(); setOpen(false); alert("Order Placed! \nEnjoy your meal.");}} className="w-full bg-[#FF6B6B] text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 active:scale-[0.98] transition-all flex justify-center items-center gap-2">
+                                    Checkout Now <Icon n="cart" c="white"/>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // --- SCREENS ---
+
+        const LoadingSkeleton = () => (
+            <div className="p-5 space-y-6">
+                <div className="h-8 w-32 bg-gray-100 rounded-full skeleton-bg"></div>
+                {[1,2,3].map(i=>(
+                    <div key={i} className="bg-white p-3 rounded-2xl border border-gray-50">
+                        <div className="h-40 w-full rounded-xl skeleton-bg mb-4"></div>
+                        <div className="h-6 w-3/4 rounded skeleton-bg mb-2"></div>
+                        <div className="h-4 w-1/2 rounded skeleton-bg"></div>
+                    </div>
+                ))}
+            </div>
+        );
+
+        const Home = ({go, setTab, tab, loading}) => {
+            const filtered = tab==='All' ? RESTAURANTS : RESTAURANTS.filter(r=>r.category===tab);
+            const cats = ['All', ...new Set(RESTAURANTS.map(r=>r.category))];
+
+            if(loading) return <LoadingSkeleton />;
+
+            return (
+                <div className="pb-24">
+                    <div className="flex gap-3 overflow-x-auto px-5 py-4 no-scrollbar">
+                        {cats.map(c => (
+                            <button key={c} onClick={()=>setTab(c)} className={`px-6 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-300 transform hover:scale-105 ${tab===c ? 'tab-active' : 'bg-white border border-gray-100 text-gray-600'}`}>
+                                {c}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="px-5 grid gap-6">
+                        {filtered.map((r, i) => (
+                            <div key={r.id} onClick={()=>go(r.id)} className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer anim-up" style={{animationDelay: `${i * 0.1}s`}}>
+                                <div className="h-48 overflow-hidden relative">
+                                    <img src={r.img} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"/>
+                                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold shadow-sm flex items-center gap-1">
+                                        <span className="text-yellow-500">★</span> {r.rating}
+                                    </div>
+                                </div>
+                                <div className="p-4">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h3 className="font-bold text-xl text-gray-900">{r.name}</h3>
+                                        <span className="text-xs font-bold px-2 py-1 bg-gray-100 rounded-md text-gray-600">{r.category}</span>
+                                    </div>
+                                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                                        <span className="flex items-center gap-1"><Icon n="clock" s={14}/> {r.time}</span>
+                                        <span>•</span>
+                                        <span>{r.fee} Delivery</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const Detail = ({id, back}) => {
+            const r = RESTAURANTS.find(x=>x.id===id);
+            const {add} = useCart();
+            const [toast, setToast] = useState(false);
+            
+            const isMounted = useRef(true);
+
+            useEffect(() => {
+                return () => {
+                    isMounted.current = false;
+                };
+            }, []);
+
+            const handleAdd = (item) => {
+                add(id, item);
+                setToast(true);
+                setTimeout(() => {
+                    if (isMounted.current) {
+                        setToast(false);
+                    }
+                }, 2000);
+            };
+
+            return (
+                <div className="pb-32">
+                    <Toast msg="Added to basket" show={toast}/>
+                    <div className="relative h-72">
+                        <img src={r.img} className="w-full h-full object-cover"/>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6">
+                            <h1 className="text-3xl font-extrabold text-white mb-2">{r.name}</h1>
+                            <div className="flex gap-4 text-white/80 text-sm font-medium">
+                                <span>{r.category}</span>
+                                <span>★ {r.rating} (500+ reviews)</span>
+                                <span>{r.time}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="px-6 pt-8">
+                        <h2 className="font-bold text-2xl mb-6 text-gray-800">Menu Items</h2>
+                        <div className="space-y-4">
+                            {r.menu.map((m, i) => (
+                                <div key={m.id} className="flex items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm anim-up" style={{animationDelay: `${i * 0.05}s`}}>
+                                    <div className="flex-1">
+                                        <h3 className="font-bold text-lg text-gray-900">{m.name}</h3>
+                                        <p className="text-sm text-gray-500 mt-1 line-clamp-2">{m.desc}</p>
+                                        <p className="font-bold text-xl text-gray-900 mt-2">${m.price}</p>
+                                    </div>
+                                    <button onClick={()=>handleAdd(m)} className="w-14 h-14 rounded-full bg-[#FF6B6B] text-white flex items-center justify-center shadow-lg shadow-red-200 active:scale-90 transition-all hover:bg-[#ff5252]">
+                                        <Icon n="plus"/>
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [scr, setScr] = useState('HOME');
+            const [rid, setRid] = useState(null);
+            const [tab, setTab] = useState('All');
+            const [loading, setLoading] = useState(true);
+
+            useEffect(() => {
+                setTimeout(() => setLoading(false), 1200);
+            }, []);
+
+            return (
+                <CartProvider>
+                    <div id="root">
+                        <Header t={scr==='HOME'?'Discover':'Details'} back={scr==='DETAIL'} onBack={()=>setScr('HOME')}/>
+                        <main className="h-[calc(100vh-70px)] overflow-y-auto no-scrollbar">
+                            {scr==='HOME' && <Home go={id=>{setRid(id);setScr('DETAIL')}} setTab={setTab} tab={tab} loading={loading}/>}
+                            {scr==='DETAIL' && <Detail id={rid} back={()=>setScr('HOME')}/>}
+                        </main>
+                        <CartSheet/>
+                    </div>
+                </CartProvider>
+            );
+        };
+        ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+    </script>
+</body>
+</html>
